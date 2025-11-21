@@ -1,0 +1,103 @@
+{
+  "info": {
+    "name": "Smart Meeting Room Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "00000000-0000-0000-0000-000000000000"
+  },
+  "item": [
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "username", "value": "admin", "type": "text" },
+            { "key": "password", "value": "AdminPass123", "type": "text" }
+          ]
+        },
+        "url": { "raw": "http://localhost:8001/token", "host": ["http://localhost"], "port": "8001", "path": ["token"] }
+      }
+    },
+    {
+      "name": "Users - Register",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\":\"alice\",\"password\":\"StrongPass123\",\"email\":\"alice@example.com\",\"full_name\":\"Alice\"}"
+        },
+        "url": { "raw": "http://localhost:8001/users", "host": ["http://localhost"], "port": "8001", "path": ["users"] }
+      }
+    },
+    {
+      "name": "Rooms - Create (admin/manager)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\"name\":\"Room A\",\"capacity\":10,\"equipment\":[\"projector\"],\"location\":\"1st floor\"}" },
+        "url": { "raw": "http://localhost:8002/rooms", "host": ["http://localhost"], "port": "8002", "path": ["rooms"] }
+      }
+    },
+    {
+      "name": "Bookings - Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{USER_TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"user_id\":1,\"room_id\":1,\"start_time\":\"2025-12-01T10:00:00\",\"end_time\":\"2025-12-01T11:00:00\"}"
+        },
+        "url": { "raw": "http://localhost:8003/bookings", "host": ["http://localhost"], "port": "8003", "path": ["bookings"] }
+      }
+    },
+    {
+      "name": "Bookings - Cancel (owner)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{USER_TOKEN}}" }],
+        "url": { "raw": "http://localhost:8003/bookings/1/cancel", "host": ["http://localhost"], "port": "8003", "path": ["bookings", "1", "cancel"] }
+      }
+    },
+    {
+      "name": "Reviews - Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{USER_TOKEN}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\"user_id\":1,\"room_id\":1,\"rating\":5,\"comment\":\"Great room\"}" },
+        "url": { "raw": "http://localhost:8004/rooms/1/reviews", "host": ["http://localhost"], "port": "8004", "path": ["rooms", "1", "reviews"] }
+      }
+    },
+    {
+      "name": "Reviews - Moderate (admin/moderator)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{ADMIN_TOKEN}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:8004/reviews/1/moderate?hide=true",
+          "host": ["http://localhost"], "port": "8004", "path": ["reviews", "1", "moderate"],
+          "query": [{ "key": "hide", "value": "true" }]
+        }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "ADMIN_TOKEN", "value": "" },
+    { "key": "USER_TOKEN", "value": "" }
+  ]
+}
