@@ -36,7 +36,17 @@ def search_rooms(db: Session, capacity: int | None = None, location: str | None 
         q = q.filter(models.Room.capacity >= capacity)
     if location:
         q = q.filter(models.Room.location == location)
+    
+    rooms = q.all()
+    
+    # Filter by equipment in Python (more reliable for JSON arrays)
     if equipment:
-        # naive equipment filter: all requested equipment in room equipment
-        q = q.filter(models.Room.equipment.contains(equipment))
-    return q.all()
+        filtered_rooms = []
+        for room in rooms:
+            room_equipment = room.equipment if room.equipment else []
+            # Check if all requested equipment items are in room's equipment
+            if all(eq_item in room_equipment for eq_item in equipment):
+                filtered_rooms.append(room)
+        return filtered_rooms
+    
+    return rooms

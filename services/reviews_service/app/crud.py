@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from . import models, schemas
 
-def create_review(db: Session, rev_in: schemas.ReviewCreate):
-    rev = models.Review(user_id=rev_in.user_id, room_id=rev_in.room_id, rating=rev_in.rating, comment=rev_in.comment)
+def create_review(db: Session, rev_in: schemas.ReviewCreate, user_id: int, room_id: int):
+    rev = models.Review(user_id=user_id, room_id=room_id, rating=rev_in.rating, comment=rev_in.comment)
     db.add(rev)
     db.commit()
     db.refresh(rev)

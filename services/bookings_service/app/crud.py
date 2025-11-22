@@ -8,8 +8,8 @@ def is_room_available(db: Session, room_id: int, start_time, end_time):
         and_(models.Booking.start_time < end_time, models.Booking.end_time > start_time))
     return q.count() == 0
 
-def create_booking(db: Session, booking_in: schemas.BookingCreate):
-    booking = models.Booking(user_id=booking_in.user_id, room_id=booking_in.room_id, start_time=booking_in.start_time, end_time=booking_in.end_time)
+def create_booking(db: Session, booking_in: schemas.BookingCreate, user_id: int):
+    booking = models.Booking(user_id=user_id, room_id=booking_in.room_id, start_time=booking_in.start_time, end_time=booking_in.end_time)
     db.add(booking)
     db.commit()
     db.refresh(booking)
