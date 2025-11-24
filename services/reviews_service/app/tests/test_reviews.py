@@ -74,3 +74,16 @@ def test_post_flag_and_moderate_review():
     r_mod = client.put(f"/reviews/{review_id}/moderate", params={"hide": True}, headers=mod_header)
     assert r_mod.status_code == 200
     assert r_mod.json()["hidden"] is True
+def test_user_reviews_authorization():
+    """Test that users can only view their own reviews"""
+    # User 1 creates review
+    payload = {"rating": 5, "comment": "Great"}
+    r1 = client.post("/rooms/1/reviews", json=payload, headers=auth_header(user_id=1))
+    
+    # User 2 tries to view User 1's reviews - should fail
+    r2 = client.get("/users/1/reviews", headers=auth_header(user_id=2))
+    assert r2.status_code == 403
+    
+    # Admin can view anyone's reviews
+    r3 = client.get("/users/1/reviews", headers=auth_header(user_id=99, role="admin"))
+    assert r3.status_code == 200

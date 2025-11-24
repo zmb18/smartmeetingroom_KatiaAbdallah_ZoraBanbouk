@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, JSON
+from sqlalchemy import Column, Integer, String, Boolean, JSON, DateTime
+from datetime import datetime
 from common.database import Base
 
 class Room(Base):
@@ -10,3 +11,5 @@ class Room(Base):
     equipment = Column(JSON, default=list)  # store as JSON array for portability
     location = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)  # ✅ ADDED
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)  # ✅ ADDED

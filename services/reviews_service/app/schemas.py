@@ -35,6 +35,7 @@ class ReviewOut(BaseModel):
     comment: Optional[str]
     flagged: bool
     hidden: bool
+    created_at: datetime
 
     class Config:
         orm_mode = True

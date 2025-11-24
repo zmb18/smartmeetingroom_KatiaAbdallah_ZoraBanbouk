@@ -56,3 +56,51 @@ def test_list_users_requires_admin():
     r_admin = client.get("/users", headers=auth_header("admin", "admin"))
     assert r_admin.status_code == 200
     assert isinstance(r_admin.json(), list)
+def test_update_user():
+    """Test updating user profile"""
+    # Create user
+    payload = {"username": "bob", "password": "BobPass123", "email": "bob@example.com"}
+    client.post("/users", json=payload)
+    
+    # Update own profile
+    update_payload = {"full_name": "Bob Smith"}
+    r = client.put("/users/bob", json=update_payload, headers=auth_header("bob", "regular"))
+    assert r.status_code == 200
+    assert r.json()["full_name"] == "Bob Smith"
+
+def test_delete_user():
+    """Test deleting user account"""
+    payload = {"username": "charlie", "password": "CharliePass123", "email": "charlie@example.com"}
+    client.post("/users", json=payload)
+    
+    # User can delete own account
+    r = client.delete("/users/charlie", headers=auth_header("charlie", "regular"))
+    assert r.status_code == 204
+    
+    # Verify user is deleted
+    r = client.get("/users/charlie", headers=auth_header("admin", "admin"))
+    assert r.status_code == 404
+
+def test_username_validation():
+    """Test username validation rules"""
+    # Invalid username with special chars
+    payload = {"username": "user@name", "password": "Pass123", "email": "test@example.com"}
+    r = client.post("/users", json=payload)
+    assert r.status_code == 422
+    
+    # Valid username with underscore
+    payload = {"username": "user_name", "password": "Pass123", "email": "test2@example.com"}
+    r = client.post("/users", json=payload)
+    assert r.status_code == 201
+
+def test_email_uniqueness():
+    """Test email must be unique"""
+    payload1 = {"username": "user1", "password": "Pass123", "email": "same@example.com"}
+    payload2 = {"username": "user2", "password": "Pass123", "email": "same@example.com"}
+    
+    r1 = client.post("/users", json=payload1)
+    assert r1.status_code == 201
+    
+    r2 = client.post("/users", json=payload2)
+    assert r2.status_code == 400
+    assert "email" in r2.json()["detail"].lower()

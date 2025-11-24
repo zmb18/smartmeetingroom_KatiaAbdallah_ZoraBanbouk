@@ -29,22 +29,26 @@ def get_db():
 def register_user(user_in: schemas.UserCreate, db: Session = Depends(get_db)):
     """
     Register a new user account.
-    
-    Args:
-        user_in: User registration data (username, password, email, full_name, role)
-        db: Database session
-        
-    Returns:
-        UserOut: Created user object (without password)
-        
-    Raises:
-        HTTPException: 400 if username or email already exists
+
+    NOTE:
+    - Role is always forced to REGULAR for self-registration, even if the client sends "admin".
     """
+    # Check uniqueness
     if crud.get_user_by_username(db, user_in.username):
         raise HTTPException(status_code=400, detail="Username already exists")
     if crud.get_user_by_email(db, user_in.email):
         raise HTTPException(status_code=400, detail="Email already registered")
-    user = crud.create_user(db, user_in)
+
+    # Force role to REGULAR regardless of what client sends
+    safe_user = schemas.UserCreate(
+        username=user_in.username,
+        password=user_in.password,
+        email=user_in.email,
+        full_name=user_in.full_name,
+        role=security.ROLE_REGULAR,
+    )
+
+    user = crud.create_user(db, safe_user)
     return user
 
 @app.post("/token", response_model=schemas.Token)
@@ -73,10 +77,17 @@ def get_current_user(token: str = Depends(auth.oauth2_scheme), db: Session = Dep
     username = payload.get("sub")
     if not username:
         raise HTTPException(status_code=401, detail="Invalid auth")
+    
     user = crud.get_user_by_username(db, username)
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
+    
+    # 🔒 Enforce deactivation
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="User is deactivated")
+    
     return user
+
 
 @app.get("/users/me", response_model=schemas.UserOut)
 def read_users_me(current_user = Depends(get_current_user)):
@@ -130,47 +141,65 @@ def read_user(username: str, db: Session = Depends(get_db), current_user = Depen
     return user
 
 @app.put("/users/{username}", response_model=schemas.UserOut)
-def update_user(username: str, user_in: schemas.UserUpdate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def update_user(
+    username: str,
+    user_in: schemas.UserUpdate,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+):
     """
-    Update user profile. Users can update their own profile, or Admin can update any user.
-    
-    Args:
-        username: Username of the user to update
-        user_in: Updated user information
-        
-    Returns:
-        UserOut: Updated user information
-        
-    Raises:
-        HTTPException: 403 if not authorized, 404 if user not found
+    Update user profile.
+    - Regular/Manager/Moderator/Service can update ONLY their own profile (no role changes).
+    - Admin can update any user and may change roles.
+    - Auditor is strictly read-only and cannot update anything.
     """
-    if current_user.username != username and current_user.role not in (security.ROLE_ADMIN,):
+    # Auditors are read-only
+    if current_user.role == security.ROLE_AUDITOR:
+        raise HTTPException(status_code=403, detail="Auditor role is read-only")
+
+    # Check ownership or admin
+    if current_user.username != username and current_user.role != security.ROLE_ADMIN:
         raise HTTPException(status_code=403, detail="Not authorized")
-    user = crud.update_user(db, username, user_in)
+
+    # Non-admin: ignore any role field to prevent self-escalation
+    if current_user.role != security.ROLE_ADMIN:
+        sanitized = schemas.UserUpdate(
+            email=user_in.email,
+            full_name=user_in.full_name,
+            password=user_in.password,
+            role=None,  # 👈 role always ignored for non-admin updates
+        )
+        user = crud.update_user(db, username, sanitized)
+    else:
+        # Admin can update everything, including role
+        user = crud.update_user(db, username, user_in)
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
 
+    return user
 @app.delete("/users/{username}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(username: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def delete_user(
+    username: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+):
     """
-    Delete user account. Users can delete their own account, or Admin can delete any user.
-    
-    Args:
-        username: Username of the user to delete
-        
-    Returns:
-        None
-        
-    Raises:
-        HTTPException: 403 if not authorized, 404 if user not found
+    Delete user account.
+    - User can delete their own account.
+    - Admin can delete any account.
+    - Auditor is read-only and cannot delete.
     """
-    if current_user.username != username and current_user.role not in (security.ROLE_ADMIN,):
+    # Auditors are read-only
+    if current_user.role == security.ROLE_AUDITOR:
+        raise HTTPException(status_code=403, detail="Auditor role is read-only")
+
+    if current_user.username != username and current_user.role != security.ROLE_ADMIN:
         raise HTTPException(status_code=403, detail="Not authorized")
+
     deleted = crud.delete_user(db, username)
     if not deleted:
         raise HTTPException(status_code=404, detail="User not found")
-    return None
 
 @app.get("/users/{username}/bookings", response_model=list[dict])
 def get_user_booking_history(username: str, db: Session = Depends(get_db), current_user = Depends(get_current_user), token: str = Depends(auth.oauth2_scheme)):
@@ -200,3 +229,110 @@ def get_user_booking_history(username: str, db: Session = Depends(get_db), curre
         raise
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Failed to get booking history: {str(e)}")
+@app.put("/users/{username}/password", response_model=schemas.UserOut)
+def reset_user_password(
+    username: str,
+    password_reset: schemas.PasswordReset,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+):
+    """
+    Reset a user's password. Only Admin can reset passwords.
+    """
+    if current_user.role != security.ROLE_ADMIN:
+        raise HTTPException(status_code=403, detail="Only admin can reset passwords")
+
+    user = crud.get_user_by_username(db, username)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # ✅ Use auth.hash_password instead of bare hash_password
+    user.hashed_password = auth.hash_password(password_reset.new_password)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@app.put("/users/{username}/role", response_model=schemas.UserOut)
+def assign_user_role(username: str, role_update: schemas.RoleUpdate, 
+                     db: Session = Depends(get_db), 
+                     current_user = Depends(get_current_user)):
+    """
+    Assign a new role to a user. Only Admin can assign roles.
+    
+    Args:
+        username: Username of the user
+        role_update: New role data
+        db: Database session
+        current_user: Current authenticated user
+        
+    Returns:
+        UserOut: Updated user information
+        
+    Raises:
+        HTTPException: 403 if not admin, 404 if user not found
+    """
+    if current_user.role != security.ROLE_ADMIN:
+        raise HTTPException(status_code=403, detail="Only admin can assign roles")
+    
+    user = crud.get_user_by_username(db, username)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Prevent admin from demoting themselves
+    if user.id == current_user.id and role_update.role != security.ROLE_ADMIN:
+        raise HTTPException(status_code=400, detail="Cannot change your own admin role")
+    
+    user.role = role_update.role
+    db.commit()
+    db.refresh(user)
+    return user
+
+@app.put("/users/{username}/deactivate", response_model=schemas.UserOut)
+def deactivate_user(username: str, db: Session = Depends(get_db), 
+                    current_user = Depends(get_current_user)):
+    """
+    Deactivate user account. Only Admin can deactivate accounts.
+    
+    Args:
+        username: Username of the user to deactivate
+        
+    Returns:
+        UserOut: Updated user information
+        
+    Raises:
+        HTTPException: 403 if not admin, 404 if user not found
+    """
+    if current_user.role != security.ROLE_ADMIN:
+        raise HTTPException(status_code=403, detail="Only admin can deactivate accounts")
+    
+    user = crud.get_user_by_username(db, username)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Prevent admin from deactivating themselves
+    if user.id == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot deactivate your own account")
+    
+    user.is_active = False
+    db.commit()
+    db.refresh(user)
+    return user
+
+@app.put("/users/{username}/activate", response_model=schemas.UserOut)
+def activate_user(username: str, db: Session = Depends(get_db), 
+                  current_user = Depends(get_current_user)):
+    """
+    Activate user account. Only Admin can activate accounts.
+    """
+    if current_user.role != security.ROLE_ADMIN:
+        raise HTTPException(status_code=403, detail="Only admin can activate accounts")
+    
+    user = crud.get_user_by_username(db, username)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.is_active = True
+    db.commit()
+    db.refresh(user)
+    return user

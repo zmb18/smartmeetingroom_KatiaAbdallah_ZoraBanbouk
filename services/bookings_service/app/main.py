@@ -267,3 +267,18 @@ def check_availability(room_id: int, start_time: str, end_time: str, db: Session
         raise HTTPException(status_code=400, detail="end_time must be after start_time")
     available = crud.is_room_available(db, room_id, start, end)
     return {"room_id": room_id, "available": available, "start_time": start_time, "end_time": end_time}
+@app.get("/bookings/user/{user_id}/history")
+def get_booking_history(
+    user_id: int, 
+    include_cancelled: bool = True,
+    db: Session = Depends(get_db),
+    token_data = Depends(get_token_data)
+):
+    """Get complete booking history for a user"""
+    # Authorization check...
+    query = db.query(models.Booking).filter(
+        models.Booking.user_id == user_id
+    )
+    if not include_cancelled:
+        query = query.filter(models.Booking.status == "booked")
+    return query.order_by(models.Booking.created_at.desc()).all()

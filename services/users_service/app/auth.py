@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 import os
 from typing import Optional, Dict, Any
+from .config import settings
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "devsecret")
 ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
