@@ -1,3 +1,10 @@
+"""
+Users Service API
+
+FastAPI application for managing user accounts, authentication, and user-related operations.
+Handles user registration, login, profile management, role assignment, and account activation.
+"""
+
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from .deps import SessionLocal, engine
@@ -19,6 +26,15 @@ logging_config.setup_request_logging(app)
 setup_error_handlers(app)
 
 def get_db():
+    """
+    Get database session dependency.
+    
+    Yields:
+        Session: SQLAlchemy database session
+        
+    Note:
+        Automatically closes the session after the request is complete
+    """
     db = SessionLocal()
     try:
         yield db
@@ -32,6 +48,16 @@ def register_user(user_in: schemas.UserCreate, db: Session = Depends(get_db)):
 
     NOTE:
     - Role is always forced to REGULAR for self-registration, even if the client sends "admin".
+    
+    Args:
+        user_in: User registration data
+        db: Database session
+        
+    Returns:
+        UserOut: Created user information
+        
+    Raises:
+        HTTPException: 400 if username or email already exists
     """
     # Check uniqueness
     if crud.get_user_by_username(db, user_in.username):
@@ -73,6 +99,19 @@ def login_for_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Sessio
     return {"access_token": token, "token_type": "bearer"}
 
 def get_current_user(token: str = Depends(auth.oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    Get current authenticated user from JWT token.
+    
+    Args:
+        token: JWT token from Authorization header
+        db: Database session
+        
+    Returns:
+        User: Current authenticated user object
+        
+    Raises:
+        HTTPException: 401 if token is invalid or user not found, 403 if user is deactivated
+    """
     payload = auth.decode_token(token)
     username = payload.get("sub")
     if not username:
@@ -94,6 +133,9 @@ def read_users_me(current_user = Depends(get_current_user)):
     """
     Get current authenticated user's information.
     
+    Args:
+        current_user: Current authenticated user
+        
     Returns:
         UserOut: Current user's information
     """
@@ -101,7 +143,12 @@ def read_users_me(current_user = Depends(get_current_user)):
 
 @app.get("/health")
 def health():
-    """Health check endpoint."""
+    """
+    Health check endpoint.
+    
+    Returns:
+        dict: Status indicating service is running
+    """
     return {"status": "ok"}
 
 @app.get("/users", response_model=list[schemas.UserOut])
@@ -109,6 +156,10 @@ def read_users(db: Session = Depends(get_db), current_user = Depends(get_current
     """
     List all users. Only Admin and Auditor roles can access this endpoint.
     
+    Args:
+        db: Database session
+        current_user: Current authenticated user
+        
     Returns:
         list[UserOut]: List of all users
         
@@ -126,6 +177,8 @@ def read_user(username: str, db: Session = Depends(get_db), current_user = Depen
     
     Args:
         username: Username of the user to retrieve
+        db: Database session
+        current_user: Current authenticated user
         
     Returns:
         UserOut: User information
@@ -152,6 +205,18 @@ def update_user(
     - Regular/Manager/Moderator/Service can update ONLY their own profile (no role changes).
     - Admin can update any user and may change roles.
     - Auditor is strictly read-only and cannot update anything.
+    
+    Args:
+        username: Username of the user to update
+        user_in: User update data
+        db: Database session
+        current_user: Current authenticated user
+        
+    Returns:
+        UserOut: Updated user information
+        
+    Raises:
+        HTTPException: 403 if not authorized, 404 if user not found
     """
     # Auditors are read-only
     if current_user.role == security.ROLE_AUDITOR:
@@ -178,6 +243,7 @@ def update_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     return user
+
 @app.delete("/users/{username}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(
     username: str,
@@ -189,6 +255,14 @@ def delete_user(
     - User can delete their own account.
     - Admin can delete any account.
     - Auditor is read-only and cannot delete.
+    
+    Args:
+        username: Username of the user to delete
+        db: Database session
+        current_user: Current authenticated user
+        
+    Raises:
+        HTTPException: 403 if not authorized, 404 if user not found
     """
     # Auditors are read-only
     if current_user.role == security.ROLE_AUDITOR:
@@ -208,6 +282,9 @@ def get_user_booking_history(username: str, db: Session = Depends(get_db), curre
     
     Args:
         username: Username of the user
+        db: Database session
+        current_user: Current authenticated user
+        token: JWT token for inter-service calls
         
     Returns:
         list[dict]: List of bookings for the user
@@ -229,6 +306,7 @@ def get_user_booking_history(username: str, db: Session = Depends(get_db), curre
         raise
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Failed to get booking history: {str(e)}")
+
 @app.put("/users/{username}/password", response_model=schemas.UserOut)
 def reset_user_password(
     username: str,
@@ -238,6 +316,18 @@ def reset_user_password(
 ):
     """
     Reset a user's password. Only Admin can reset passwords.
+    
+    Args:
+        username: Username of the user
+        password_reset: New password data
+        db: Database session
+        current_user: Current authenticated user
+        
+    Returns:
+        UserOut: Updated user information
+        
+    Raises:
+        HTTPException: 403 if not admin, 404 if user not found
     """
     if current_user.role != security.ROLE_ADMIN:
         raise HTTPException(status_code=403, detail="Only admin can reset passwords")
@@ -270,7 +360,7 @@ def assign_user_role(username: str, role_update: schemas.RoleUpdate,
         UserOut: Updated user information
         
     Raises:
-        HTTPException: 403 if not admin, 404 if user not found
+        HTTPException: 403 if not admin, 400 if trying to change own role, 404 if user not found
     """
     if current_user.role != security.ROLE_ADMIN:
         raise HTTPException(status_code=403, detail="Only admin can assign roles")
@@ -296,12 +386,14 @@ def deactivate_user(username: str, db: Session = Depends(get_db),
     
     Args:
         username: Username of the user to deactivate
+        db: Database session
+        current_user: Current authenticated user
         
     Returns:
         UserOut: Updated user information
         
     Raises:
-        HTTPException: 403 if not admin, 404 if user not found
+        HTTPException: 403 if not admin, 400 if trying to deactivate own account, 404 if user not found
     """
     if current_user.role != security.ROLE_ADMIN:
         raise HTTPException(status_code=403, detail="Only admin can deactivate accounts")
@@ -324,6 +416,17 @@ def activate_user(username: str, db: Session = Depends(get_db),
                   current_user = Depends(get_current_user)):
     """
     Activate user account. Only Admin can activate accounts.
+    
+    Args:
+        username: Username of the user to activate
+        db: Database session
+        current_user: Current authenticated user
+        
+    Returns:
+        UserOut: Updated user information
+        
+    Raises:
+        HTTPException: 403 if not admin, 404 if user not found
     """
     if current_user.role != security.ROLE_ADMIN:
         raise HTTPException(status_code=403, detail="Only admin can activate accounts")

@@ -1,3 +1,13 @@
+"""
+Test suite for the Users service.
+
+This module contains comprehensive tests for all user management endpoints including:
+- User registration and login
+- Profile updates and deletion
+- Authorization and role-based access control
+- Input validation and uniqueness constraints
+"""
+
 import os
 import sys
 from pathlib import Path
@@ -17,6 +27,16 @@ client = TestClient(app)
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_db():
+    """
+    Set up test database before running tests and clean up afterwards.
+    
+    This fixture:
+    - Drops all existing tables
+    - Creates fresh tables for testing
+    - Seeds an admin user for authorization tests
+    - Yields control to tests
+    - Cleans up tables and database file after all tests complete
+    """
     models.Base.metadata.drop_all(bind=engine)
     models.Base.metadata.create_all(bind=engine)
     # seed an admin
@@ -35,11 +55,29 @@ def setup_db():
 
 
 def auth_header(username: str, role: str):
+    """
+    Create authorization header with JWT token.
+    
+    Args:
+        username: Username to encode in the token
+        role: User role to encode in the token
+        
+    Returns:
+        dict: Authorization header with Bearer token
+    """
     token = auth.create_access_token({"sub": username, "role": role})
     return {"Authorization": f"Bearer {token}"}
 
 
 def test_register_and_login():
+    """
+    Test user registration and login flow.
+    
+    Verifies that:
+    - New user can be registered successfully
+    - User can login with correct credentials
+    - Access token is returned upon successful login
+    """
     payload = {"username": "alice", "password": "StrongPass123", "email": "alice@example.com", "full_name": "Alice"}
     r = client.post("/users", json=payload)
     assert r.status_code == 201
@@ -51,13 +89,29 @@ def test_register_and_login():
 
 
 def test_list_users_requires_admin():
+    """
+    Test that listing all users requires admin or auditor role.
+    
+    Verifies that:
+    - Regular users receive 403 Forbidden
+    - Admin users can access the endpoint
+    - Response is a list of users
+    """
     r = client.get("/users", headers=auth_header("alice", "regular"))
     assert r.status_code == 403
     r_admin = client.get("/users", headers=auth_header("admin", "admin"))
     assert r_admin.status_code == 200
     assert isinstance(r_admin.json(), list)
+
 def test_update_user():
-    """Test updating user profile"""
+    """
+    Test updating user profile.
+    
+    Verifies that:
+    - User can create an account
+    - User can update their own profile information
+    - Updated information is persisted correctly
+    """
     # Create user
     payload = {"username": "bob", "password": "BobPass123", "email": "bob@example.com"}
     client.post("/users", json=payload)
@@ -69,7 +123,14 @@ def test_update_user():
     assert r.json()["full_name"] == "Bob Smith"
 
 def test_delete_user():
-    """Test deleting user account"""
+    """
+    Test deleting user account.
+    
+    Verifies that:
+    - User can delete their own account
+    - Deletion returns 204 No Content
+    - User no longer exists after deletion
+    """
     payload = {"username": "charlie", "password": "CharliePass123", "email": "charlie@example.com"}
     client.post("/users", json=payload)
     
@@ -82,7 +143,13 @@ def test_delete_user():
     assert r.status_code == 404
 
 def test_username_validation():
-    """Test username validation rules"""
+    """
+    Test username validation rules.
+    
+    Verifies that:
+    - Usernames with special characters are rejected (422)
+    - Usernames with only letters, digits, and underscores are accepted
+    """
     # Invalid username with special chars
     payload = {"username": "user@name", "password": "Pass123", "email": "test@example.com"}
     r = client.post("/users", json=payload)
@@ -94,7 +161,14 @@ def test_username_validation():
     assert r.status_code == 201
 
 def test_email_uniqueness():
-    """Test email must be unique"""
+    """
+    Test email must be unique across all users.
+    
+    Verifies that:
+    - First user with an email can be registered
+    - Second user with the same email is rejected with 400 Bad Request
+    - Error message mentions email conflict
+    """
     payload1 = {"username": "user1", "password": "Pass123", "email": "same@example.com"}
     payload2 = {"username": "user2", "password": "Pass123", "email": "same@example.com"}
     

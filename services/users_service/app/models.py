@@ -1,3 +1,10 @@
+"""
+Database models for the Users service.
+
+This module defines the SQLAlchemy ORM models for user management and audit logging,
+including user accounts with authentication, roles, and activity tracking.
+"""
+
 # SQLAlchemy models for the Users service
 from datetime import datetime
 
@@ -7,6 +14,20 @@ from common.database import Base
 
 
 class User(Base):
+    """
+    User model representing a user account in the system.
+    
+    Attributes:
+        id: Primary key for the user
+        username: Unique username (3-50 characters)
+        hashed_password: Bcrypt hashed password
+        email: Unique email address
+        full_name: User's full name
+        role: User role (admin, regular, manager, moderator, auditor, service)
+        is_active: Whether the user account is active
+        created_at: Timestamp when the user was created
+        metadata: Optional JSON field for additional user data
+    """
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -25,7 +46,19 @@ class User(Base):
 
 
 class AuditLog(Base):
-    """Audit log table to track who did what and when."""
+    """
+    Audit log table to track who did what and when.
+    
+    Attributes:
+        id: Primary key for the audit log entry
+        user_id: ID of the user who performed the action
+        username: Username of the user who performed the action
+        action: Description of the action performed
+        resource: Type of resource affected
+        resource_id: ID of the specific resource affected
+        details: Optional JSON field with additional details about the action
+        created_at: Timestamp when the action was performed
+    """
 
     __tablename__ = "audit_logs"
 

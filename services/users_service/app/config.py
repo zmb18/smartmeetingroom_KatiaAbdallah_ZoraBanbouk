@@ -1,12 +1,26 @@
 """
-Configuration module for Users Service
-Manages environment variables and settings
+Configuration module for Users Service.
+
+Manages environment variables and settings for database connection,
+JWT authentication, and service configuration.
 """
+
 import os
 from typing import Optional
 
 class Settings:
-    """Application Settings"""
+    """
+    Application Settings.
+    
+    Attributes:
+        SQLALCHEMY_DATABASE_URL: Database connection URL
+        SECRET_KEY: Secret key for JWT token signing
+        ALGORITHM: Algorithm used for JWT encoding (HS256)
+        ACCESS_TOKEN_EXPIRE_MINUTES: Token expiration time in minutes
+        SERVICE_NAME: Name of the service
+        DEBUG: Debug mode flag
+        API_PREFIX: API route prefix
+    """
     
     # Database Configuration
     SQLALCHEMY_DATABASE_URL: str = os.getenv(
@@ -27,6 +41,7 @@ class Settings:
     API_PREFIX: str = "/api/v1"
     
     class Config:
+        """Pydantic configuration."""
         case_sensitive = True
 
 settings = Settings()

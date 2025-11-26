@@ -1,3 +1,10 @@
+"""
+Bookings Service API
+
+FastAPI application for managing meeting room bookings, availability checks, and booking history.
+Handles booking creation, updates, cancellations, and provides various query endpoints.
+"""
+
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .deps import SessionLocal, engine
@@ -18,6 +25,15 @@ logging_config.setup_request_logging(app)
 setup_error_handlers(app)
 
 def get_db():
+    """
+    Get database session dependency.
+    
+    Yields:
+        Session: SQLAlchemy database session
+        
+    Note:
+        Automatically closes the session after the request is complete
+    """
     db = SessionLocal()
     try:
         yield db
@@ -25,14 +41,40 @@ def get_db():
         db.close()
 
 def get_token_data(token: str = Depends(auth.oauth2_scheme)):
+    """
+    Decode and return JWT token data.
+    
+    Args:
+        token: JWT token string from Authorization header
+        
+    Returns:
+        dict: Decoded token data containing user information
+        
+    Raises:
+        HTTPException: 401 if token is invalid or expired
+    """
     return auth.decode_token(token)
 
 def get_token_string(token: str = Depends(auth.oauth2_scheme)) -> str:
-    """Get the raw token string for passing to other services"""
+    """
+    Get the raw token string for passing to other services.
+    
+    Args:
+        token: JWT token string from Authorization header
+        
+    Returns:
+        str: Raw JWT token string
+    """
     return token
 
 @app.get("/health")
 def health():
+    """
+    Health check endpoint.
+    
+    Returns:
+        dict: Status indicating service is running
+    """
     return {"status": "ok"}
 
 @app.post("/bookings", response_model=schemas.BookingOut)
@@ -125,6 +167,10 @@ def list_bookings(db: Session = Depends(get_db), token_data = Depends(get_token_
     """
     List all bookings. Only Admin, Manager, and Auditor roles can access this endpoint.
     
+    Args:
+        db: Database session
+        token_data: Decoded JWT token data
+        
     Returns:
         list[BookingOut]: List of all bookings
         
@@ -141,6 +187,8 @@ def get_booking(booking_id: int, db: Session = Depends(get_db), token_data = Dep
     
     Args:
         booking_id: ID of the booking
+        db: Database session
+        token_data: Decoded JWT token data
         
     Returns:
         BookingOut: Booking details
@@ -158,6 +206,19 @@ def update_booking(booking_id: int, booking_in: schemas.BookingUpdate, db: Sessi
     """
     Update a booking. Regular users can update their own bookings.
     Admin and Manager can update any booking.
+    
+    Args:
+        booking_id: ID of the booking to update
+        booking_in: Booking update data (room_id, start_time, end_time, status)
+        db: Database session
+        token_data: Decoded JWT token data
+        token: Raw JWT token for inter-service calls
+        
+    Returns:
+        BookingOut: Updated booking
+        
+    Raises:
+        HTTPException: 403 if not authorized, 404 if booking not found, 409 if room unavailable
     """
     role = token_data.get("role")
     username = token_data.get("sub")
@@ -267,6 +328,7 @@ def check_availability(room_id: int, start_time: str, end_time: str, db: Session
         raise HTTPException(status_code=400, detail="end_time must be after start_time")
     available = crud.is_room_available(db, room_id, start, end)
     return {"room_id": room_id, "available": available, "start_time": start_time, "end_time": end_time}
+
 @app.get("/bookings/user/{user_id}/history")
 def get_booking_history(
     user_id: int, 
@@ -274,7 +336,18 @@ def get_booking_history(
     db: Session = Depends(get_db),
     token_data = Depends(get_token_data)
 ):
-    """Get complete booking history for a user"""
+    """
+    Get complete booking history for a user.
+    
+    Args:
+        user_id: ID of the user
+        include_cancelled: Whether to include cancelled bookings (default: True)
+        db: Database session
+        token_data: Decoded JWT token data
+        
+    Returns:
+        list: List of bookings ordered by creation date (descending)
+    """
     # Authorization check...
     query = db.query(models.Booking).filter(
         models.Booking.user_id == user_id
@@ -282,3 +355,94 @@ def get_booking_history(
     if not include_cancelled:
         query = query.filter(models.Booking.status == "booked")
     return query.order_by(models.Booking.created_at.desc()).all()
+
+@app.get("/bookings/internal/room/{room_id}")
+def get_room_bookings_internal(
+    room_id: int, 
+    db: Session = Depends(get_db),
+    token_data = Depends(get_token_data)
+):
+    """
+    Internal endpoint for service-to-service communication.
+    Get all bookings for a specific room. Requires service account role.
+    
+    Args:
+        room_id: ID of the room
+        db: Database session
+        token_data: Decoded JWT token data
+        
+    Returns:
+        list: List of bookings for the room
+        
+    Raises:
+        HTTPException: 403 if not a service account
+    """
+    security.require_role(token_data, security.ROLE_SERVICE_ACCOUNT)
+    return crud.get_bookings_for_room(db, room_id)
+
+@app.get("/bookings/statistics")
+def get_statistics(
+    db: Session = Depends(get_db),
+    token_data = Depends(get_token_data)
+):
+    """
+    Get booking statistics - Admin only.
+    
+    Args:
+        db: Database session
+        token_data: Decoded JWT token data
+        
+    Returns:
+        dict: Statistics including total bookings, active bookings, 
+              cancelled bookings, cancellation rate, and override rate
+              
+    Raises:
+        HTTPException: 403 if not admin
+    """
+    security.require_role(token_data, security.ROLE_ADMIN)
+    stats = crud.get_booking_statistics(db)
+    
+    # Calculate override rate
+    total = stats["total_bookings"]
+    overridden = db.query(models.Booking).filter(
+        models.Booking.status == "overridden"
+    ).count()
+    
+    stats["override_rate"] = (overridden / total * 100) if total > 0 else 0
+    return stats
+
+
+@app.post("/bookings/{booking_id}/override", response_model=schemas.BookingOut)
+def override_booking(
+    booking_id: int,
+    reason: str,
+    db: Session = Depends(get_db),
+    token_data = Depends(get_token_data)
+):
+    """
+    Override a booking - Admin/Manager only.
+    Sets the booking status to 'overridden' with a reason.
+    
+    Args:
+        booking_id: ID of the booking to override
+        reason: Reason for overriding the booking
+        db: Database session
+        token_data: Decoded JWT token data
+        
+    Returns:
+        BookingOut: Overridden booking with updated status
+        
+    Raises:
+        HTTPException: 403 if not admin/manager, 404 if booking not found
+    """
+    security.require_any_role(token_data, {security.ROLE_ADMIN, security.ROLE_MANAGER})
+    
+    booking = crud.get_booking(db, booking_id)
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    booking.status = "overridden"
+    booking.override_reason = reason
+    db.commit()
+    db.refresh(booking)
+    return booking
