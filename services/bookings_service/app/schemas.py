@@ -28,6 +28,7 @@ class BookingCreate(BaseModel):
     room_id: int = Field(..., gt=0, description="ID of the room to book")
     start_time: datetime = Field(..., description="Booking start time (ISO format)")
     end_time: datetime = Field(..., description="Booking end time (ISO format)")
+    attendee_count: int | None = Field(None, description="Number of attendees")
 
     @root_validator
     def validate_times(cls, values):
@@ -137,7 +138,24 @@ class BookingUpdate(BaseModel):
         if v not in valid_statuses:
             raise ValueError(f'Status must be one of: {", ".join(valid_statuses)}')
         return v
+class CancellationRequest(BaseModel):
+    """
+    Schema for booking cancellation request.
+    
+    Attributes:
+        reason: Optional reason for cancelling the booking
+    """
+    reason: str | None = Field(None, max_length=500, description="Reason for cancellation")
 
+
+class OverrideRequest(BaseModel):
+    """
+    Schema for booking override request (Admin/Manager only).
+    
+    Attributes:
+        reason: Required reason for overriding the booking
+    """
+    reason: str = Field(..., min_length=1, max_length=500, description="Reason for overriding this booking")
 class BookingOut(BaseModel):
     """
     Schema for booking output/response.
