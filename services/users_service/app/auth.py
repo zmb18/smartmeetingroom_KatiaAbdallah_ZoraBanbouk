@@ -1,81 +1,61 @@
-"""
-Authentication and authorization utilities for the Users service.
-
-This module provides JWT token creation/validation and password hashing/verification
-using industry-standard libraries (python-jose for JWT, passlib for password hashing).
-"""
-
-from datetime import datetime, timedelta
-from jose import jwt, JWTError, ExpiredSignatureError
+# auth.py
 from passlib.context import CryptContext
-from fastapi import HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-import os
-from typing import Optional, Dict, Any
-from .config import settings
+from datetime import datetime, timedelta
+from typing import Optional
+from jose import JWTError, jwt
 
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "devsecret")
-ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
-
+# -----------------------------
+# Password hashing configuration
+# -----------------------------
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+MAX_BCRYPT_LENGTH = 72  # bcrypt limitation
 
 def hash_password(password: str) -> str:
     """
-    Hash a plain text password using bcrypt.
-    
-    Args:
-        password: Plain text password to hash
-        
-    Returns:
-        str: Bcrypt hashed password
+    Hash a plain password using bcrypt, truncating if >72 bytes.
     """
-    return pwd_context.hash(password)
+    truncated = password.encode("utf-8")[:MAX_BCRYPT_LENGTH].decode("utf-8", "ignore")
+    return pwd_context.hash(truncated)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
-    Verify a plain text password against a hashed password.
-    
-    Args:
-        plain_password: Plain text password to verify
-        hashed_password: Bcrypt hashed password to compare against
-        
-    Returns:
-        bool: True if password matches, False otherwise
+    Verify a plain password against a hashed password.
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    truncated = plain_password.encode("utf-8")[:MAX_BCRYPT_LENGTH].decode("utf-8", "ignore")
+    return pwd_context.verify(truncated, hashed_password)
 
-def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+# -----------------------------
+# JWT / Token utilities
+# -----------------------------
+SECRET_KEY = "your-secret-key"  # change this to a strong random key
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 1 hour
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """
     Create a JWT access token.
-    
-    Args:
-        data: Payload data to encode in the token (typically includes 'sub' for username and 'role')
-        expires_delta: Optional custom expiration time delta
-        
-    Returns:
-        str: Encoded JWT token
     """
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def decode_token(token: str) -> Dict[str, Any]:
+def decode_access_token(token: str) -> dict:
     """
-    Decode and validate a JWT access token.
-    
-    Args:
-        token: JWT token string to decode
-        
-    Returns:
-        dict: Decoded token payload
-        
-    Raises:
-        HTTPException: 401 if token is invalid or expired
+    Decode a JWT token and return the payload.
+    Raises JWTError if invalid.
     """
     try:
-        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except (ExpiredSignatureError, JWTError):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError as e:
+        raise e
+
+# -----------------------------
+# Example usage
+# -----------------------------
+if __name__ == "__main__":
+    pwd = "thisIsAReallyLongPasswordThatExceedsThe72ByteLimitSetByBcrypt" * 2
+    hashed = hash_password(pwd)
+    print("Hashed password:", hashed)
+    print("Verify:", verify_password(pwd, hashed))
