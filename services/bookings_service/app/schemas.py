@@ -50,7 +50,7 @@ class BookingCreate(BaseModel):
             if end <= start:
                 raise ValueError("end_time must be after start_time")
             
-            # Only validate future time in production (not in tests)
+        
             if os.getenv("TESTING") != "true":
                 from datetime import datetime as dt
                 if start < dt.now():
@@ -75,7 +75,7 @@ class BookingCreate(BaseModel):
         end = values.get("end_time")
         if start and end:
             duration = (end - start).total_seconds() / 3600
-            if duration < 0.25:  # 15 minutes
+            if duration < 0.25:  
                 raise ValueError("Booking must be at least 15 minutes")
             if duration > 8:
                 raise ValueError("Booking cannot exceed 8 hours")

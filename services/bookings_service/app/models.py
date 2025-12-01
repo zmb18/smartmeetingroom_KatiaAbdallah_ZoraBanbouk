@@ -35,25 +35,25 @@ class Booking(Base):
     """
     __tablename__ = "bookings"
     
-    # Primary fields
+   
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, nullable=False)
     room_id = Column(Integer, nullable=False)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
-    status = Column(String(32), default="booked")  # booked, cancelled, overridden, completed
+    status = Column(String(32), default="booked")  
     
-    # Audit fields
+    
     created_at = Column(DateTime, default=datetime.utcnow)
     modified_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    modified_by = Column(Integer, nullable=True)  # user_id who last modified
+    modified_by = Column(Integer, nullable=True)  
     
-    # Additional tracking fields
+    
     attendee_count = Column(Integer, nullable=True)
     cancellation_reason = Column(String(500), nullable=True)
     override_reason = Column(String(500), nullable=True)
     
-    # Performance indexes
+   
     __table_args__ = (
         Index('idx_room_time', 'room_id', 'start_time', 'end_time'),
         Index('idx_user_bookings', 'user_id', 'start_time'),

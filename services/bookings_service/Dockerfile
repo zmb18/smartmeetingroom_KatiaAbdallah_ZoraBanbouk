@@ -2,18 +2,22 @@ FROM python:3.11-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app
+    PYTHONPATH=/
 
-WORKDIR /app
+WORKDIR /
 
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
 
 COPY services/bookings_service/app/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-COPY common /app/common
+COPY common /common
 COPY services/bookings_service/app /app
+
+# Make sure app is a package
+RUN touch /app/__init__.py
 
 EXPOSE 8003
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8003"]
+# Run as a module to support relative imports
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8003"]

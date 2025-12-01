@@ -12,8 +12,8 @@ COPY services/rooms_service/app/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY common /app/common
-COPY services/rooms_service/app /app
+COPY services/rooms_service/app /app/app
 
 EXPOSE 8002
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8002"]

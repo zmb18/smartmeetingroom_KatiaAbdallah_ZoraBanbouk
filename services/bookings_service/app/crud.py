@@ -27,7 +27,7 @@ def is_room_available(db: Session, room_id: int, start_time: datetime, end_time:
         )
     )
     
-    # Exclude specific booking when updating
+  
     if exclude_booking_id:
         query = query.filter(models.Booking.id != exclude_booking_id)
     
@@ -183,7 +183,7 @@ def update_booking(db: Session, booking_id: int, booking_in: schemas.BookingUpda
     if not booking:
         return None
     
-    # Update only provided fields
+
     data = booking_in.dict(exclude_unset=True)
     for field, value in data.items():
         setattr(booking, field, value)

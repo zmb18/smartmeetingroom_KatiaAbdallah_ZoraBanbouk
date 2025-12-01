@@ -5,7 +5,7 @@ This module defines the SQLAlchemy ORM models for user management and audit logg
 including user accounts with authentication, roles, and activity tracking.
 """
 
-# SQLAlchemy models for the Users service
+
 from datetime import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, JSON, String
@@ -37,12 +37,11 @@ class User(Base):
     full_name = Column(String(120))
     role = Column(
         String(32), default="regular"
-    )  # admin, regular, manager, moderator, auditor, service
+    )  
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    # booking_history could be a JSON or handled by Bookings service - keep reference minimal
-    metadata = Column(JSON, nullable=True)
+    user_metadata = Column(JSON, nullable=True)
 
 
 class AuditLog(Base):

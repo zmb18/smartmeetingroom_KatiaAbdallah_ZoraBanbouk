@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration (config.py) &mdash; Users Service 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Users Service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Configuration (config.py)</a><ul>
+<li><a class="reference internal" href="#app.config.Settings"><code class="docutils literal notranslate"><span class="pre">Settings</span></code></a><ul>
+<li><a class="reference internal" href="#app.config.Settings.SQLALCHEMY_DATABASE_URL"><code class="docutils literal notranslate"><span class="pre">Settings.SQLALCHEMY_DATABASE_URL</span></code></a></li>
+<li><a class="reference internal" href="#app.config.Settings.SECRET_KEY"><code class="docutils literal notranslate"><span class="pre">Settings.SECRET_KEY</span></code></a></li>
+<li><a class="reference internal" href="#app.config.Settings.ALGORITHM"><code class="docutils literal notranslate"><span class="pre">Settings.ALGORITHM</span></code></a></li>
+<li><a class="reference internal" href="#app.config.Settings.ACCESS_TOKEN_EXPIRE_MINUTES"><code class="docutils literal notranslate"><span class="pre">Settings.ACCESS_TOKEN_EXPIRE_MINUTES</span></code></a></li>
+<li><a class="reference internal" href="#app.config.Settings.SERVICE_NAME"><code class="docutils literal notranslate"><span class="pre">Settings.SERVICE_NAME</span></code></a></li>
+<li><a class="reference internal" href="#app.config.Settings.DEBUG"><code class="docutils literal notranslate"><span class="pre">Settings.DEBUG</span></code></a></li>
+<li><a class="reference internal" href="#app.config.Settings.API_PREFIX"><code class="docutils literal notranslate"><span class="pre">Settings.API_PREFIX</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">Settings.SQLALCHEMY_DATABASE_URL</span></code></a></li>
+<li><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">Settings.SECRET_KEY</span></code></a></li>
+<li><a class="reference internal" href="#id2"><code class="docutils literal notranslate"><span class="pre">Settings.ALGORITHM</span></code></a></li>
+<li><a class="reference internal" href="#id3"><code class="docutils literal notranslate"><span class="pre">Settings.ACCESS_TOKEN_EXPIRE_MINUTES</span></code></a></li>
+<li><a class="reference internal" href="#id4"><code class="docutils literal notranslate"><span class="pre">Settings.SERVICE_NAME</span></code></a></li>
+<li><a class="reference internal" href="#id5"><code class="docutils literal notranslate"><span class="pre">Settings.DEBUG</span></code></a></li>
+<li><a class="reference internal" href="#id6"><code class="docutils literal notranslate"><span class="pre">Settings.API_PREFIX</span></code></a></li>
+<li><a class="reference internal" href="#app.config.Settings.Config"><code class="docutils literal notranslate"><span class="pre">Settings.Config</span></code></a><ul>
+<li><a class="reference internal" href="#app.config.Settings.Config.case_sensitive"><code class="docutils literal notranslate"><span class="pre">Settings.Config.case_sensitive</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#settings-class">Settings Class</a><ul>
+<li><a class="reference internal" href="#id7"><code class="docutils literal notranslate"><span class="pre">Settings</span></code></a><ul>
+<li><a class="reference internal" href="#id8"><code class="docutils literal notranslate"><span class="pre">Settings.SQLALCHEMY_DATABASE_URL</span></code></a></li>
+<li><a class="reference internal" href="#id9"><code class="docutils literal notranslate"><span class="pre">Settings.SECRET_KEY</span></code></a></li>
+<li><a class="reference internal" href="#id10"><code class="docutils literal notranslate"><span class="pre">Settings.ALGORITHM</span></code></a></li>
+<li><a class="reference internal" href="#id11"><code class="docutils literal notranslate"><span class="pre">Settings.ACCESS_TOKEN_EXPIRE_MINUTES</span></code></a></li>
+<li><a class="reference internal" href="#id12"><code class="docutils literal notranslate"><span class="pre">Settings.SERVICE_NAME</span></code></a></li>
+<li><a class="reference internal" href="#id13"><code class="docutils literal notranslate"><span class="pre">Settings.DEBUG</span></code></a></li>
+<li><a class="reference internal" href="#id14"><code class="docutils literal notranslate"><span class="pre">Settings.API_PREFIX</span></code></a></li>
+<li><a class="reference internal" href="#id15"><code class="docutils literal notranslate"><span class="pre">Settings.SQLALCHEMY_DATABASE_URL</span></code></a></li>
+<li><a class="reference internal" href="#id16"><code class="docutils literal notranslate"><span class="pre">Settings.SECRET_KEY</span></code></a></li>
+<li><a class="reference internal" href="#id17"><code class="docutils literal notranslate"><span class="pre">Settings.ALGORITHM</span></code></a></li>
+<li><a class="reference internal" href="#id18"><code class="docutils literal notranslate"><span class="pre">Settings.ACCESS_TOKEN_EXPIRE_MINUTES</span></code></a></li>
+<li><a class="reference internal" href="#id19"><code class="docutils literal notranslate"><span class="pre">Settings.SERVICE_NAME</span></code></a></li>
+<li><a class="reference internal" href="#id20"><code class="docutils literal notranslate"><span class="pre">Settings.DEBUG</span></code></a></li>
+<li><a class="reference internal" href="#id21"><code class="docutils literal notranslate"><span class="pre">Settings.API_PREFIX</span></code></a></li>
+<li><a class="reference internal" href="#id22"><code class="docutils literal notranslate"><span class="pre">Settings.Config</span></code></a><ul>
+<li><a class="reference internal" href="#id23"><code class="docutils literal notranslate"><span class="pre">Settings.Config.case_sensitive</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#settings-instance">Settings Instance</a><ul>
+<li><a class="reference internal" href="#app.config.settings"><code class="docutils literal notranslate"><span class="pre">settings</span></code></a></li>
+<li><a class="reference internal" href="#app.config.SQLALCHEMY_DATABASE_URL"><code class="docutils literal notranslate"><span class="pre">SQLALCHEMY_DATABASE_URL</span></code></a></li>
+<li><a class="reference internal" href="#app.config.SECRET_KEY"><code class="docutils literal notranslate"><span class="pre">SECRET_KEY</span></code></a></li>
+<li><a class="reference internal" href="#app.config.ALGORITHM"><code class="docutils literal notranslate"><span class="pre">ALGORITHM</span></code></a></li>
+<li><a class="reference internal" href="#app.config.ACCESS_TOKEN_EXPIRE_MINUTES"><code class="docutils literal notranslate"><span class="pre">ACCESS_TOKEN_EXPIRE_MINUTES</span></code></a></li>
+<li><a class="reference internal" href="#app.config.SERVICE_NAME"><code class="docutils literal notranslate"><span class="pre">SERVICE_NAME</span></code></a></li>
+<li><a class="reference internal" href="#app.config.DEBUG"><code class="docutils literal notranslate"><span class="pre">DEBUG</span></code></a></li>
+<li><a class="reference internal" href="#app.config.API_PREFIX"><code class="docutils literal notranslate"><span class="pre">API_PREFIX</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Users Service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Configuration (config.py)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/config.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-app.config">
+<span id="configuration-config-py"></span><h1>Configuration (config.py)<a class="headerlink" href="#module-app.config" title="Permalink to this heading"></a></h1>
+<p>Configuration module for Users Service.</p>
+<p>Manages environment variables and settings for database connection,
+JWT authentication, and service configuration.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="app.config.Settings">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">app.config.</span></span><span class="sig-name descname"><span class="pre">Settings</span></span><a class="reference internal" href="../_modules/app/config.html#Settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.config.Settings" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Application Settings.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.Settings.SQLALCHEMY_DATABASE_URL">
+<span class="sig-name descname"><span class="pre">SQLALCHEMY_DATABASE_URL</span></span><a class="headerlink" href="#app.config.Settings.SQLALCHEMY_DATABASE_URL" title="Permalink to this definition"></a></dt>
+<dd><p>Database connection URL</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.Settings.SECRET_KEY">
+<span class="sig-name descname"><span class="pre">SECRET_KEY</span></span><a class="headerlink" href="#app.config.Settings.SECRET_KEY" title="Permalink to this definition"></a></dt>
+<dd><p>Secret key for JWT token signing</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.Settings.ALGORITHM">
+<span class="sig-name descname"><span class="pre">ALGORITHM</span></span><a class="headerlink" href="#app.config.Settings.ALGORITHM" title="Permalink to this definition"></a></dt>
+<dd><p>Algorithm used for JWT encoding (HS256)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.Settings.ACCESS_TOKEN_EXPIRE_MINUTES">
+<span class="sig-name descname"><span class="pre">ACCESS_TOKEN_EXPIRE_MINUTES</span></span><a class="headerlink" href="#app.config.Settings.ACCESS_TOKEN_EXPIRE_MINUTES" title="Permalink to this definition"></a></dt>
+<dd><p>Token expiration time in minutes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.Settings.SERVICE_NAME">
+<span class="sig-name descname"><span class="pre">SERVICE_NAME</span></span><a class="headerlink" href="#app.config.Settings.SERVICE_NAME" title="Permalink to this definition"></a></dt>
+<dd><p>Name of the service</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.Settings.DEBUG">
+<span class="sig-name descname"><span class="pre">DEBUG</span></span><a class="headerlink" href="#app.config.Settings.DEBUG" title="Permalink to this definition"></a></dt>
+<dd><p>Debug mode flag</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.Settings.API_PREFIX">
+<span class="sig-name descname"><span class="pre">API_PREFIX</span></span><a class="headerlink" href="#app.config.Settings.API_PREFIX" title="Permalink to this definition"></a></dt>
+<dd><p>API route prefix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">SQLALCHEMY_DATABASE_URL</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'postgresql://postgres:password&#64;db:5432/users_db'</span></em><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">SECRET_KEY</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'your-secret-key-change-in-production'</span></em><a class="headerlink" href="#id1" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">ALGORITHM</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'HS256'</span></em><a class="headerlink" href="#id2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">ACCESS_TOKEN_EXPIRE_MINUTES</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">30</span></em><a class="headerlink" href="#id3" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">SERVICE_NAME</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Users</span> <span class="pre">Service'</span></em><a class="headerlink" href="#id4" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">DEBUG</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#id5" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">API_PREFIX</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/api/v1'</span></em><a class="headerlink" href="#id6" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="app.config.Settings.Config">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Config</span></span><a class="reference internal" href="../_modules/app/config.html#Settings.Config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.config.Settings.Config" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Pydantic configuration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.Settings.Config.case_sensitive">
+<span class="sig-name descname"><span class="pre">case_sensitive</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#app.config.Settings.Config.case_sensitive" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<section id="settings-class">
+<h2>Settings Class<a class="headerlink" href="#settings-class" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="id7">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">app.config.</span></span><span class="sig-name descname"><span class="pre">Settings</span></span><a class="reference internal" href="../_modules/app/config.html#Settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id7" title="Permalink to this definition"></a></dt>
+<dd><p>Application Settings.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">SQLALCHEMY_DATABASE_URL</span></span><a class="headerlink" href="#id8" title="Permalink to this definition"></a></dt>
+<dd><p>Database connection URL</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">SECRET_KEY</span></span><a class="headerlink" href="#id9" title="Permalink to this definition"></a></dt>
+<dd><p>Secret key for JWT token signing</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">ALGORITHM</span></span><a class="headerlink" href="#id10" title="Permalink to this definition"></a></dt>
+<dd><p>Algorithm used for JWT encoding (HS256)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">ACCESS_TOKEN_EXPIRE_MINUTES</span></span><a class="headerlink" href="#id11" title="Permalink to this definition"></a></dt>
+<dd><p>Token expiration time in minutes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">SERVICE_NAME</span></span><a class="headerlink" href="#id12" title="Permalink to this definition"></a></dt>
+<dd><p>Name of the service</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">DEBUG</span></span><a class="headerlink" href="#id13" title="Permalink to this definition"></a></dt>
+<dd><p>Debug mode flag</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id14">
+<span class="sig-name descname"><span class="pre">API_PREFIX</span></span><a class="headerlink" href="#id14" title="Permalink to this definition"></a></dt>
+<dd><p>API route prefix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Application configuration settings loaded from environment variables.</p>
+<p><strong>Database Configuration:</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">SQLALCHEMY_DATABASE_URL</span></code>: PostgreSQL connection string</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">postgresql://postgres:password&#64;db:5432/users_db</span></code></p>
+</li>
+</ul>
+<p><strong>JWT Configuration:</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">SECRET_KEY</span></code>: Secret key for JWT signing</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">your-secret-key-change-in-production</span></code></p>
+<p><strong>⚠️ Must be changed in production!</strong></p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ALGORITHM</span></code>: JWT encoding algorithm</p>
+<p>Value: <code class="docutils literal notranslate"><span class="pre">HS256</span></code></p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ACCESS_TOKEN_EXPIRE_MINUTES</span></code>: Token expiration time</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">30</span></code> minutes</p>
+</li>
+</ul>
+<p><strong>Service Configuration:</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">SERVICE_NAME</span></code>: Name of the service</p>
+<p>Value: <code class="docutils literal notranslate"><span class="pre">Users</span> <span class="pre">Service</span></code></p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DEBUG</span></code>: Debug mode flag</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</li>
+</ul>
+<p><strong>API Configuration:</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">API_PREFIX</span></code>: API route prefix</p>
+<p>Value: <code class="docutils literal notranslate"><span class="pre">/api/v1</span></code></p>
+</li>
+</ul>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id15">
+<span class="sig-name descname"><span class="pre">SQLALCHEMY_DATABASE_URL</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'postgresql://postgres:password&#64;db:5432/users_db'</span></em><a class="headerlink" href="#id15" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id16">
+<span class="sig-name descname"><span class="pre">SECRET_KEY</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'your-secret-key-change-in-production'</span></em><a class="headerlink" href="#id16" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id17">
+<span class="sig-name descname"><span class="pre">ALGORITHM</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'HS256'</span></em><a class="headerlink" href="#id17" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id18">
+<span class="sig-name descname"><span class="pre">ACCESS_TOKEN_EXPIRE_MINUTES</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">30</span></em><a class="headerlink" href="#id18" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id19">
+<span class="sig-name descname"><span class="pre">SERVICE_NAME</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Users</span> <span class="pre">Service'</span></em><a class="headerlink" href="#id19" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id20">
+<span class="sig-name descname"><span class="pre">DEBUG</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#id20" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id21">
+<span class="sig-name descname"><span class="pre">API_PREFIX</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/api/v1'</span></em><a class="headerlink" href="#id21" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="id22">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Config</span></span><a class="reference internal" href="../_modules/app/config.html#Settings.Config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id22" title="Permalink to this definition"></a></dt>
+<dd><p>Pydantic configuration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id23">
+<span class="sig-name descname"><span class="pre">case_sensitive</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id23" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="settings-instance">
+<h2>Settings Instance<a class="headerlink" href="#settings-instance" title="Permalink to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="app.config.settings">
+<span class="sig-prename descclassname"><span class="pre">app.config.</span></span><span class="sig-name descname"><span class="pre">settings</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;app.config.Settings</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#app.config.settings" title="Permalink to this definition"></a></dt>
+<dd><p>Application Settings.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.SQLALCHEMY_DATABASE_URL">
+<span class="sig-prename descclassname"><span class="pre">app.config.</span></span><span class="sig-name descname"><span class="pre">SQLALCHEMY_DATABASE_URL</span></span><a class="headerlink" href="#app.config.SQLALCHEMY_DATABASE_URL" title="Permalink to this definition"></a></dt>
+<dd><p>Database connection URL</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.SECRET_KEY">
+<span class="sig-prename descclassname"><span class="pre">app.config.</span></span><span class="sig-name descname"><span class="pre">SECRET_KEY</span></span><a class="headerlink" href="#app.config.SECRET_KEY" title="Permalink to this definition"></a></dt>
+<dd><p>Secret key for JWT token signing</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.ALGORITHM">
+<span class="sig-prename descclassname"><span class="pre">app.config.</span></span><span class="sig-name descname"><span class="pre">ALGORITHM</span></span><a class="headerlink" href="#app.config.ALGORITHM" title="Permalink to this definition"></a></dt>
+<dd><p>Algorithm used for JWT encoding (HS256)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.ACCESS_TOKEN_EXPIRE_MINUTES">
+<span class="sig-prename descclassname"><span class="pre">app.config.</span></span><span class="sig-name descname"><span class="pre">ACCESS_TOKEN_EXPIRE_MINUTES</span></span><a class="headerlink" href="#app.config.ACCESS_TOKEN_EXPIRE_MINUTES" title="Permalink to this definition"></a></dt>
+<dd><p>Token expiration time in minutes</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.SERVICE_NAME">
+<span class="sig-prename descclassname"><span class="pre">app.config.</span></span><span class="sig-name descname"><span class="pre">SERVICE_NAME</span></span><a class="headerlink" href="#app.config.SERVICE_NAME" title="Permalink to this definition"></a></dt>
+<dd><p>Name of the service</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.DEBUG">
+<span class="sig-prename descclassname"><span class="pre">app.config.</span></span><span class="sig-name descname"><span class="pre">DEBUG</span></span><a class="headerlink" href="#app.config.DEBUG" title="Permalink to this definition"></a></dt>
+<dd><p>Debug mode flag</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="app.config.API_PREFIX">
+<span class="sig-prename descclassname"><span class="pre">app.config.</span></span><span class="sig-name descname"><span class="pre">API_PREFIX</span></span><a class="headerlink" href="#app.config.API_PREFIX" title="Permalink to this definition"></a></dt>
+<dd><p>API route prefix</p>
+</dd></dl>
+
+<p>Global settings instance used throughout the application.</p>
+</dd></dl>
+
+</section>
+<section id="environment-variables">
+<h2>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this heading"></a></h2>
+<p>The following environment variables can be set to configure the service:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">DATABASE_URL</span></code>: Override default database connection</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SECRET_KEY</span></code>: Set JWT secret key (required for production)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DEBUG</span></code>: Enable debug mode (set to “true”)</p></li>
+</ul>
+<p>Example <code class="docutils literal notranslate"><span class="pre">.env</span></code> file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DATABASE_URL</span><span class="o">=</span><span class="n">postgresql</span><span class="p">:</span><span class="o">//</span><span class="n">user</span><span class="p">:</span><span class="k">pass</span><span class="nd">@localhost</span><span class="p">:</span><span class="mi">5432</span><span class="o">/</span><span class="n">users_db</span>
+<span class="n">SECRET_KEY</span><span class="o">=</span><span class="n">your</span><span class="o">-</span><span class="nb">super</span><span class="o">-</span><span class="n">secret</span><span class="o">-</span><span class="n">key</span><span class="o">-</span><span class="n">here</span>
+<span class="n">DEBUG</span><span class="o">=</span><span class="n">false</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Smart Meeting Room System.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
